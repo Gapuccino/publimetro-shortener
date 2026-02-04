@@ -15,7 +15,8 @@ s.publimetro.cl,
 s.publimetro.co,
 s.publimetro.com.mx,
 s.publinews.gt,
-s.sagrosso.com {
+s.sagrosso.com,
+16.148.140.43.sslip.io {
     
     # API y Redirecciones pasan al backend
     handle /api/* {
@@ -37,12 +38,12 @@ s.sagrosso.com {
     }
 }
 
-# Health Check por IP (para pruebas)
+# Acceso por IP (para pruebas temporales)
 :80 {
-    handle /api/health {
+    handle /api/* {
         reverse_proxy backend:8000
     }
     handle {
-        abort
+        reverse_proxy frontend:4321
     }
 }
