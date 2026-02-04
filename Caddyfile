@@ -36,3 +36,13 @@ s.sagrosso.com {
         reverse_proxy frontend:4321
     }
 }
+
+# Health Check por IP (para pruebas)
+:80 {
+    handle /api/health {
+        reverse_proxy backend:8000
+    }
+    handle {
+        abort
+    }
+}
