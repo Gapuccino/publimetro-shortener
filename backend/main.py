@@ -38,6 +38,12 @@ app.add_middleware(
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "publimetro2024")
 BASE_URL = os.getenv("BASE_URL", "http://localhost:8000")
 
+def get_base_url(request: Request):
+    # Try to get the protocol and host from headers (respecting proxy)
+    protocol = request.headers.get("X-Forwarded-Proto", request.url.scheme)
+    host = request.headers.get("Host", request.url.netloc)
+    return f"{protocol}://{host}"
+
 
 # ============ AUTH ============
 @app.post("/api/auth", response_model=AuthResponse)
@@ -49,7 +55,7 @@ async def authenticate(auth: AuthRequest):
 
 # ============ LINKS ============
 @app.post("/api/links", response_model=LinkResponse)
-async def create_link(link: LinkCreate, db: Session = Depends(get_db)):
+async def create_link(link: LinkCreate, request: Request, db: Session = Depends(get_db)):
     # Generate or use custom short code
     if link.custom_code:
         # Check if custom code exists
@@ -82,13 +88,14 @@ async def create_link(link: LinkCreate, db: Session = Depends(get_db)):
         title=db_link.title,
         created_at=db_link.created_at,
         clicks=db_link.clicks,
-        short_url=f"{BASE_URL}/{db_link.short_code}"
+        short_url=f"{get_base_url(request)}/{db_link.short_code}"
     )
 
 
 @app.get("/api/links", response_model=LinkListResponse)
-async def get_links(db: Session = Depends(get_db)):
+async def get_links(request: Request, db: Session = Depends(get_db)):
     links = db.query(Link).order_by(Link.created_at.desc()).all()
+    base_url = get_base_url(request)
     
     return LinkListResponse(
         links=[
@@ -99,7 +106,7 @@ async def get_links(db: Session = Depends(get_db)):
                 title=link.title,
                 created_at=link.created_at,
                 clicks=link.clicks,
-                short_url=f"{BASE_URL}/{link.short_code}"
+                short_url=f"{base_url}/{link.short_code}"
             )
             for link in links
         ],
