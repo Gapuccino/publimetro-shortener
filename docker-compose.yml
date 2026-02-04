@@ -1,11 +1,23 @@
 services:
+  caddy:
+    image: caddy:latest
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - backend
+      - frontend
+    restart: unless-stopped
+
   backend:
     build: ./backend
-    ports:
-      - "8000:8000"
     environment:
       - ADMIN_PASSWORD=publimetro2024
-      - BASE_URL=http://localhost:8000
+      - BASE_URL=https://link.publimetro.com.mx
       - DATABASE_URL=sqlite:///./shortener.db
     volumes:
       - ./backend:/app
@@ -14,11 +26,11 @@ services:
 
   frontend:
     build: ./frontend
-    ports:
-      - "4321:4321"
     depends_on:
       - backend
     restart: unless-stopped
 
 volumes:
   backend-data:
+  caddy_data:
+  caddy_config:

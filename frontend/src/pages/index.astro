@@ -15,12 +15,18 @@ import "../styles/global.css";
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code&display=swap"
       rel="stylesheet"
     />
+    <link rel="icon" type="image/png" href="/favicon.png?v=3" />
   </head>
   <body>
     <div class="login-container">
       <div class="login-card card-glass fade-in">
         <div class="login-header">
-          <h1 class="logo">Publimetro</h1>
+          <img
+            src="/publimetro-logo.png"
+            alt="Publimetro Shortener"
+            class="logo-img"
+            style="margin: 0 auto 1rem; height: 70px;"
+          />
           <p class="text-muted">URL Shortener</p>
         </div>
 
@@ -62,13 +68,8 @@ import "../styles/global.css";
         background:
           radial-gradient(
             ellipse at top,
-            rgba(230, 57, 70, 0.15) 0%,
-            transparent 50%
-          ),
-          radial-gradient(
-            ellipse at bottom,
-            rgba(69, 123, 157, 0.1) 0%,
-            transparent 50%
+            rgba(35, 133, 75, 0.1) 0%,
+            transparent 60%
           ),
           var(--background);
       }
@@ -93,7 +94,7 @@ import "../styles/global.css";
     </style>
 
     <script>
-      const API_URL = "http://localhost:8000";
+      const API_URL = "";
 
       document
         .getElementById("loginForm")
