@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 from nanoid import generate
 import os
 from dotenv import load_dotenv
+from urllib.parse import urlparse
 
 from database import engine, get_db, Base
 from models import Link, Click
@@ -36,11 +37,40 @@ app.add_middleware(
 )
 
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "publimetro2024")
-BASE_URL = os.getenv("BASE_URL", "http://localhost:8000")
 
-def get_base_url(request: Request):
-    # Try to get the protocol and host from headers (respecting proxy)
+DOMAIN_MAPPING = {
+    "elcalce.com": "s.elcalce.com",
+    "fayerwayer.com": "s.fayerwayer.com",
+    "ferplei.com": "s.ferplei.com",
+    "metroecuador.com.ec": "s.metroecuador.com.ec",
+    "metro.pr": "s.metro.pr",
+    "metroworldnews.com": "s.metroworldnews.com",
+    "mwnjornal.com.br": "s.mwnjornal.com.br",
+    "nuevamujer.com": "s.nuevamujer.com",
+    "publimetro.cl": "s.publimetro.cl",
+    "publimetro.co": "s.publimetro.co",
+    "publimetro.com.mx": "s.publimetro.com.mx",
+    "publinews.gt": "s.publinews.gt",
+    "sagrosso.com": "s.sagrosso.com"
+}
+
+def get_base_url(request: Request, original_url: str = None):
     protocol = request.headers.get("X-Forwarded-Proto", request.url.scheme)
+    
+    if original_url:
+        try:
+            parsed = urlparse(original_url)
+            netloc = parsed.netloc.lower()
+            if netloc.startswith("www."):
+                netloc = netloc[4:]
+            
+            for domain, short_domain in DOMAIN_MAPPING.items():
+                if netloc == domain or netloc.endswith("." + domain):
+                    return f"{protocol}://{short_domain}"
+        except:
+            pass
+
+    # Fallback: detect from current request
     host = request.headers.get("Host", request.url.netloc)
     return f"{protocol}://{host}"
 
@@ -88,7 +118,7 @@ async def create_link(link: LinkCreate, request: Request, db: Session = Depends(
         title=db_link.title,
         created_at=db_link.created_at,
         clicks=db_link.clicks,
-        short_url=f"{get_base_url(request)}/{db_link.short_code}"
+        short_url=f"{get_base_url(request, db_link.original_url)}/{db_link.short_code}"
     )
 
 
@@ -106,7 +136,7 @@ async def get_links(request: Request, db: Session = Depends(get_db)):
                 title=link.title,
                 created_at=link.created_at,
                 clicks=link.clicks,
-                short_url=f"{base_url}/{link.short_code}"
+                short_url=f"{get_base_url(request, link.original_url)}/{link.short_code}"
             )
             for link in links
         ],
