@@ -3,19 +3,19 @@
 }
 
 # Configuración para todos los dominios de Publimetro
-link.elcalce.com,
-link.fayerwayer.com,
-link.ferplei.com,
-link.metroecuador.com.ec,
-link.metro.pr,
-link.metroworldnews.com,
-link.mwnjornal.com.br,
-link.nuevamujer.com,
-link.publimetro.cl,
-link.publimetro.co,
-link.publimetro.com.mx,
-link.publinews.gt,
-link.sagrosso.com {
+s.elcalce.com,
+s.fayerwayer.com,
+s.ferplei.com,
+s.metroecuador.com.ec,
+s.metro.pr,
+s.metroworldnews.com,
+s.mwnjornal.com.br,
+s.nuevamujer.com,
+s.publimetro.cl,
+s.publimetro.co,
+s.publimetro.com.mx,
+s.publinews.gt,
+s.sagrosso.com {
     
     # API y Redirecciones pasan al backend
     handle /api/* {
