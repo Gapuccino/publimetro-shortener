@@ -1,0 +1,337 @@
+---
+import "../styles/global.css";
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Dashboard - Publimetro URL Shortener" />
+    <title>Dashboard | Publimetro URL Shortener</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <header class="header">
+      <div class="container header-content">
+        <span class="logo">Publimetro Shortener</span>
+        <button id="logoutBtn" class="btn btn-secondary btn-sm"
+          >Cerrar sesión</button
+        >
+      </div>
+    </header>
+
+    <main class="container mt-xl">
+      <section class="stats-grid fade-in">
+        <div class="stat-card">
+          <div class="stat-value" id="totalLinks">-</div>
+          <div class="stat-label">Links totales</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="totalClicks">-</div>
+          <div class="stat-label">Clics totales</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="linksToday">-</div>
+          <div class="stat-label">Links hoy</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="clicksToday">-</div>
+          <div class="stat-label">Clics hoy</div>
+        </div>
+      </section>
+
+      <section class="card mt-xl fade-in" style="animation-delay: 0.1s">
+        <h3 class="mb-lg">Crear nuevo link</h3>
+        <form id="createForm" class="create-form">
+          <div class="form-row">
+            <div class="input-group" style="flex: 2">
+              <label for="url">URL Original</label>
+              <input
+                type="url"
+                id="url"
+                class="input"
+                placeholder="https://ejemplo.com/pagina-muy-larga"
+                required
+              />
+            </div>
+            <div class="input-group" style="flex: 1">
+              <label for="title">Título (opcional)</label>
+              <input
+                type="text"
+                id="title"
+                class="input"
+                placeholder="Mi link"
+              />
+            </div>
+            <div class="input-group" style="flex: 1">
+              <label for="customCode">Código personalizado</label>
+              <input
+                type="text"
+                id="customCode"
+                class="input"
+                placeholder="mi-link"
+                pattern="[a-zA-Z0-9-_]+"
+              />
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary mt-md">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"
+              ></path>
+              <path
+                d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"
+              ></path>
+            </svg>
+            Crear link corto
+          </button>
+        </form>
+      </section>
+
+      <section class="card mt-xl fade-in" style="animation-delay: 0.2s">
+        <h3 class="mb-lg">Links creados</h3>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Link Corto</th>
+                <th>URL Original</th>
+                <th>Título</th>
+                <th>Clics</th>
+                <th>Creado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="linksTable">
+              <tr
+                ><td colspan="6" class="text-center text-muted">Cargando...</td
+                ></tr
+              >
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <div id="toast" class="toast" style="display: none;"></div>
+
+    <style>
+      main {
+        padding-bottom: var(--space-2xl);
+      }
+      .create-form .form-row {
+        display: flex;
+        gap: var(--space-md);
+        flex-wrap: wrap;
+      }
+      .create-form .input-group {
+        min-width: 200px;
+      }
+      @media (max-width: 768px) {
+        .create-form .form-row {
+          flex-direction: column;
+        }
+        .create-form .input-group {
+          flex: 1 !important;
+        }
+      }
+      .actions-cell {
+        display: flex;
+        gap: var(--space-sm);
+      }
+    </style>
+
+    <script>
+      const API_URL = "http://localhost:8000";
+
+      if (sessionStorage.getItem("authenticated") !== "true") {
+        window.location.href = "/";
+      }
+
+      document.getElementById("logoutBtn")?.addEventListener("click", () => {
+        sessionStorage.removeItem("authenticated");
+        window.location.href = "/";
+      });
+
+      function showToast(
+        message: string,
+        type: "success" | "error" = "success",
+      ) {
+        const toast = document.getElementById("toast");
+        if (toast) {
+          toast.textContent = message;
+          toast.className = `toast toast-${type}`;
+          toast.style.display = "block";
+          setTimeout(() => {
+            toast.style.display = "none";
+          }, 3000);
+        }
+      }
+
+      async function copyToClipboard(text: string) {
+        try {
+          await navigator.clipboard.writeText(text);
+          showToast("¡Copiado al portapapeles!");
+        } catch {
+          showToast("Error al copiar", "error");
+        }
+      }
+
+      function formatDate(dateString: string): string {
+        const date = new Date(dateString);
+        return date.toLocaleDateString("es-MX", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      }
+
+      async function loadStats() {
+        try {
+          const response = await fetch(`${API_URL}/api/stats`);
+          const stats = await response.json();
+          const el = (id: string) => document.getElementById(id);
+          if (el("totalLinks"))
+            el("totalLinks")!.textContent = stats.total_links.toLocaleString();
+          if (el("totalClicks"))
+            el("totalClicks")!.textContent =
+              stats.total_clicks.toLocaleString();
+          if (el("linksToday"))
+            el("linksToday")!.textContent = stats.links_today.toLocaleString();
+          if (el("clicksToday"))
+            el("clicksToday")!.textContent =
+              stats.clicks_today.toLocaleString();
+        } catch (error) {
+          console.error("Error loading stats:", error);
+        }
+      }
+
+      async function loadLinks() {
+        const tableBody = document.getElementById("linksTable");
+        if (!tableBody) return;
+
+        try {
+          const response = await fetch(`${API_URL}/api/links`);
+          const data = await response.json();
+
+          if (data.links.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="6" class="text-center text-muted">No hay links creados aún</td></tr>`;
+            return;
+          }
+
+          tableBody.innerHTML = data.links
+            .map(
+              (link: any) => `
+          <tr>
+            <td>
+              <div class="flex items-center gap-sm">
+                <span class="short-link">${link.short_url}</span>
+                <button class="copy-btn" onclick="copyToClipboard('${link.short_url}')" title="Copiar">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                </button>
+              </div>
+            </td>
+            <td><a href="${link.original_url}" target="_blank" class="truncate text-muted" title="${link.original_url}">${link.original_url}</a></td>
+            <td>${link.title || "-"}</td>
+            <td><strong>${link.clicks.toLocaleString()}</strong></td>
+            <td class="text-sm text-muted">${formatDate(link.created_at)}</td>
+            <td><div class="actions-cell"><button class="btn btn-danger btn-sm" onclick="deleteLink(${link.id})">Eliminar</button></div></td>
+          </tr>
+        `,
+            )
+            .join("");
+        } catch (error) {
+          console.error("Error loading links:", error);
+          tableBody.innerHTML = `<tr><td colspan="6" class="text-center text-error">Error al cargar los links</td></tr>`;
+        }
+      }
+
+      async function deleteLink(id: number) {
+        if (!confirm("¿Estás seguro de eliminar este link?")) return;
+        try {
+          const response = await fetch(`${API_URL}/api/links/${id}`, {
+            method: "DELETE",
+          });
+          if (response.ok) {
+            showToast("Link eliminado");
+            loadLinks();
+            loadStats();
+          } else {
+            showToast("Error al eliminar", "error");
+          }
+        } catch {
+          showToast("Error de conexión", "error");
+        }
+      }
+
+      document
+        .getElementById("createForm")
+        ?.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const urlInput = document.getElementById("url") as HTMLInputElement;
+          const titleInput = document.getElementById(
+            "title",
+          ) as HTMLInputElement;
+          const customCodeInput = document.getElementById(
+            "customCode",
+          ) as HTMLInputElement;
+
+          const body: any = { url: urlInput.value };
+          if (titleInput.value) body.title = titleInput.value;
+          if (customCodeInput.value) body.custom_code = customCodeInput.value;
+
+          try {
+            const response = await fetch(`${API_URL}/api/links`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(body),
+            });
+
+            if (response.ok) {
+              const link = await response.json();
+              showToast("¡Link creado exitosamente!");
+              await copyToClipboard(link.short_url);
+              urlInput.value = "";
+              titleInput.value = "";
+              customCodeInput.value = "";
+              loadLinks();
+              loadStats();
+            } else {
+              const error = await response.json();
+              showToast(error.detail || "Error al crear el link", "error");
+            }
+          } catch {
+            showToast("Error de conexión", "error");
+          }
+        });
+
+      (window as any).copyToClipboard = copyToClipboard;
+      (window as any).deleteLink = deleteLink;
+
+      loadStats();
+      loadLinks();
+      setInterval(() => {
+        loadStats();
+        loadLinks();
+      }, 30000);
+    </script>
+  </body>
+</html>

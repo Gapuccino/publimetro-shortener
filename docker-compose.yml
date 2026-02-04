@@ -1,0 +1,24 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      - ADMIN_PASSWORD=publimetro2024
+      - BASE_URL=http://localhost:8000
+      - DATABASE_URL=sqlite:///./shortener.db
+    volumes:
+      - ./backend:/app
+      - backend-data:/app/data
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "4321:4321"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  backend-data:
