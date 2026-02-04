@@ -1,4 +1,22 @@
 services:
+  backend:
+    build: ./backend
+    environment:
+      - ADMIN_PASSWORD=publimetro2024
+      - BASE_URL=https://link.publimetro.com.mx  # This should be configurable
+      - DATABASE_URL=sqlite:///./data/shortener.db
+    volumes:
+      - backend-data:/app/data
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    environment:
+      - PUBLIC_API_URL=/api
+    depends_on:
+      - backend
+    restart: unless-stopped
+
   caddy:
     image: caddy:latest
     ports:
@@ -11,23 +29,6 @@ services:
     depends_on:
       - backend
       - frontend
-    restart: unless-stopped
-
-  backend:
-    build: ./backend
-    environment:
-      - ADMIN_PASSWORD=publimetro2024
-      - BASE_URL=https://link.publimetro.com.mx
-      - DATABASE_URL=sqlite:///./shortener.db
-    volumes:
-      - ./backend:/app
-      - backend-data:/app/data
-    restart: unless-stopped
-
-  frontend:
-    build: ./frontend
-    depends_on:
-      - backend
     restart: unless-stopped
 
 volumes:
