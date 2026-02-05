@@ -2,22 +2,9 @@
     email gabriel.rueda@metrolatam.com
 }
 
-# Configuración para todos los dominios de Publimetro
-s.readmetro.com,
-16.148.140.43.sslip.io,
-s.elcalce.com,
-s.fayerwayer.com,
-s.ferplei.com,
-s.metroecuador.com.ec,
-s.metro.pr,
-s.metroworldnews.com,
-s.mwnjornal.com.br,
-s.nuevamujer.com,
-s.publimetro.cl,
-s.publimetro.co,
-s.publimetro.com.mx,
-s.publinews.gt,
-s.sagrosso.com {
+# Configuración para el acortador de URLs - Solo s.metrolatam.com
+s.metrolatam.com,
+16.148.140.43.sslip.io {
     
     # API pasan al backend
     handle /api/* {

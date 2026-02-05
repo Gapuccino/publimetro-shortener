@@ -39,20 +39,22 @@ app.add_middleware(
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "publimetro2026")
 
 DOMAIN_MAPPING = {
-    "readmetro.com": "s.readmetro.com",
-    "elcalce.com": "s.elcalce.com",
-    "fayerwayer.com": "s.fayerwayer.com",
-    "ferplei.com": "s.ferplei.com",
-    "metroecuador.com.ec": "s.metroecuador.com.ec",
-    "metro.pr": "s.metro.pr",
-    "metroworldnews.com": "s.metroworldnews.com",
-    "mwnjornal.com.br": "s.mwnjornal.com.br",
-    "nuevamujer.com": "s.nuevamujer.com",
-    "publimetro.cl": "s.readmetro.com",
-    "publimetro.co": "s.readmetro.com",
-    "publimetro.com.mx": "s.readmetro.com",
-    "publinews.gt": "s.publinews.gt",
-    "sagrosso.com": "s.sagrosso.com"
+    # Todos los dominios usan s.metrolatam.com
+    "metrolatam.com": "s.metrolatam.com",
+    "readmetro.com": "s.metrolatam.com",
+    "elcalce.com": "s.metrolatam.com",
+    "fayerwayer.com": "s.metrolatam.com",
+    "ferplei.com": "s.metrolatam.com",
+    "metroecuador.com.ec": "s.metrolatam.com",
+    "metro.pr": "s.metrolatam.com",
+    "metroworldnews.com": "s.metrolatam.com",
+    "mwnjornal.com.br": "s.metrolatam.com",
+    "nuevamujer.com": "s.metrolatam.com",
+    "publimetro.cl": "s.metrolatam.com",
+    "publimetro.co": "s.metrolatam.com",
+    "publimetro.com.mx": "s.metrolatam.com",
+    "publinews.gt": "s.metrolatam.com",
+    "sagrosso.com": "s.metrolatam.com"
 }
 
 def get_base_url(request: Request, original_url: str = None):
