@@ -16,7 +16,7 @@ s.publimetro.co,
 s.publimetro.com.mx,
 s.publinews.gt,
 s.sagrosso.com,
-16.148.140.43.sslip.io {
+16-148-140-43.sslip.io {
     
     # API y Redirecciones pasan al backend
     handle /api/* {
@@ -38,11 +38,22 @@ s.sagrosso.com,
     }
 }
 
-# Acceso por IP (para pruebas temporales)
+# Acceso por IP (para pruebas temporales y redirecciones)
 :80 {
+    # API pasan al backend
     handle /api/* {
         reverse_proxy backend:8000
     }
+
+    # Redirecciones (si no es dashboard o assets)
+    handle {
+        @not_static {
+            not path /dashboard /_astro/* /favicon.png /publimetro-logo.png / /api/*
+        }
+        reverse_proxy @not_static backend:8000
+    }
+
+    # Dashboard y Assets al frontend
     handle {
         reverse_proxy frontend:4321
     }

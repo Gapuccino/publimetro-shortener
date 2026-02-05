@@ -36,7 +36,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "publimetro2024")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "publimetro2026")
 
 DOMAIN_MAPPING = {
     "elcalce.com": "s.elcalce.com",

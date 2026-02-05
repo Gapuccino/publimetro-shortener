@@ -3,7 +3,7 @@ services:
   backend:
     build: ./backend
     environment:
-      - ADMIN_PASSWORD=publimetro2024
+      - ADMIN_PASSWORD=publimetro2026
       - BASE_URL=https://s.publimetro.com.mx
       - DATABASE_URL=sqlite:///./data/shortener.db
     volumes:
