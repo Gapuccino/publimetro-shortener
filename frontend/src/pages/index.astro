@@ -159,7 +159,10 @@ import "../styles/global.css";
             });
 
             if (response.ok) {
+              const data = await response.json();
               sessionStorage.setItem("authenticated", "true");
+              sessionStorage.setItem("role", data.role);
+              sessionStorage.setItem("token", password); // Store password as token
               window.location.href = "/dashboard";
             } else {
               if (errorEl) errorEl.style.display = "block";

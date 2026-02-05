@@ -34,6 +34,7 @@ class AuthRequest(BaseModel):
 class AuthResponse(BaseModel):
     success: bool
     message: str
+    role: Optional[str] = None
 
 
 class StatsResponse(BaseModel):

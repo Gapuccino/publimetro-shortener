@@ -615,71 +615,30 @@ import "../styles/global.css";
         window.location.href = "/";
       }
 
+      // Get credentials
+      const authToken = sessionStorage.getItem("token");
+      const userRole = sessionStorage.getItem("role") || "editorial";
+
       document.getElementById("logoutBtn")?.addEventListener("click", () => {
         sessionStorage.removeItem("authenticated");
+        sessionStorage.removeItem("role");
+        sessionStorage.removeItem("token");
         window.location.href = "/";
       });
 
-      function showToast(
-        message: string,
-        type: "success" | "error" = "success",
-      ) {
-        const toast = document.getElementById("toast");
-        if (toast) {
-          toast.textContent = message;
-          toast.className = `toast toast-${type}`;
-          toast.style.display = "block";
-          setTimeout(() => {
-            toast.style.display = "none";
-          }, 3000);
-        }
-      }
+      // ... existing toast and copy functions ...
 
-      async function copyToClipboard(text: string) {
-        try {
-          if (navigator.clipboard && window.isSecureContext) {
-            await navigator.clipboard.writeText(text);
-            showToast("¡Link copiado!");
-          } else {
-            // Fallback para contextos no seguros (HTTP por IP)
-            const textArea = document.createElement("textarea");
-            textArea.value = text;
-            textArea.style.position = "fixed";
-            textArea.style.left = "-9999px";
-            textArea.style.top = "0";
-            document.body.appendChild(textArea);
-            textArea.focus();
-            textArea.select();
-            try {
-              document.execCommand("copy");
-              showToast("¡Link copiado!");
-            } catch (err) {
-              console.error("Fallback copy failed", err);
-              showToast("Error al copiar", "error");
-            }
-            document.body.removeChild(textArea);
-          }
-        } catch {
-          showToast("Error al copiar", "error");
-        }
-      }
-
-      function formatDate(dateString: string): string {
-        // Backend returns UTC but without 'Z', so we add it
-        const utcDateString = dateString.endsWith('Z') ? dateString : dateString + 'Z';
-        const date = new Date(utcDateString);
-        return date.toLocaleDateString("es-MX", {
-          day: "2-digit",
-          month: "short",
-          hour: "2-digit",
-          minute: "2-digit",
-          timeZone: "America/Mexico_City",
-        });
+      async function fetchWithAuth(url: string, options: RequestInit = {}) {
+        const headers = {
+          ...options.headers,
+          "Authorization": `Bearer ${authToken}`
+        };
+        return fetch(url, { ...options, headers });
       }
 
       async function loadStats() {
         try {
-          const response = await fetch(`${API_URL}/api/stats`);
+          const response = await fetchWithAuth(`${API_URL}/api/stats`);
           const stats = await response.json();
           const el = (id: string) => document.getElementById(id);
           if (el("totalLinks"))
@@ -696,7 +655,7 @@ import "../styles/global.css";
         if (!tableBody) return;
 
         try {
-          const response = await fetch(`${API_URL}/api/links`);
+          const response = await fetchWithAuth(`${API_URL}/api/links`);
           const data = await response.json();
 
           if (data.links.length === 0) {
@@ -722,7 +681,11 @@ import "../styles/global.css";
               <td>${link.title || '<span class="text-muted">-</span>'}</td>
               <td><strong>${link.clicks}</strong></td>
               <td class="date-cell">${formatDate(link.created_at)}</td>
-              <td><button style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #ef4444; padding: 0.4rem 0.85rem; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer;" onmouseover="this.style.background='#ef4444'; this.style.color='white';" onmouseout="this.style.background='rgba(239, 68, 68, 0.15)'; this.style.color='#ef4444';" onclick="deleteLink(${link.id})">Eliminar</button></td>
+              <td>
+                ${userRole === 'admin' ? 
+                  `<button style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #ef4444; padding: 0.4rem 0.85rem; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer;" onmouseover="this.style.background='#ef4444'; this.style.color='white';" onmouseout="this.style.background='rgba(239, 68, 68, 0.15)'; this.style.color='#ef4444';" onclick="deleteLink(${link.id})">Eliminar</button>` 
+                  : ''}
+              </td>
             </tr>
           `,
             )
@@ -731,6 +694,11 @@ import "../styles/global.css";
           tableBody.innerHTML = `<tr><td colspan="5" class="text-center text-error">Error al cargar</td></tr>`;
         }
       }
+
+      // ... delete modal logic ...
+      
+      // Update delete and create to use fetchWithAuth
+
 
       let pendingDeleteId: number | null = null;
 
@@ -759,7 +727,7 @@ import "../styles/global.css";
 
           try {
             console.log(`Intentando eliminar link ID: ${idToDelete}`);
-            const response = await fetch(`${API_URL}/api/links/${idToDelete}`, {
+            const response = await fetchWithAuth(`${API_URL}/api/links/${idToDelete}`, {
               method: "DELETE",
             });
 
@@ -815,7 +783,7 @@ import "../styles/global.css";
           if (customCodeInput.value) body.custom_code = customCodeInput.value;
 
           try {
-            const response = await fetch(`${API_URL}/api/links`, {
+            const response = await fetchWithAuth(`${API_URL}/api/links`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify(body),

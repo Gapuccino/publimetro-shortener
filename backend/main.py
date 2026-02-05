@@ -37,6 +37,7 @@ app.add_middleware(
 )
 
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "publimetro2026")
+EDITORIAL_PASSWORD = os.getenv("EDITORIAL_PASSWORD", "publimetro_edit")
 
 DOMAIN_MAPPING = {
     # Todos los dominios usan s.metrolatam.com
@@ -82,13 +83,33 @@ def get_base_url(request: Request, original_url: str = None):
 @app.post("/api/auth", response_model=AuthResponse)
 async def authenticate(auth: AuthRequest):
     if auth.password == ADMIN_PASSWORD:
-        return AuthResponse(success=True, message="Autenticación exitosa")
+        return AuthResponse(success=True, message="Autenticación exitosa", role="admin")
+    if auth.password == EDITORIAL_PASSWORD:
+        return AuthResponse(success=True, message="Autenticación exitosa", role="editorial")
     raise HTTPException(status_code=401, detail="Contraseña incorrecta")
+
+async def get_current_role(request: Request):
+    auth_header = request.headers.get("Authorization")
+    if not auth_header:
+        # Fallback for old clients or direct access without header
+        return "editorial" # Default restrictivo
+    
+    token = auth_header.replace("Bearer ", "")
+    if token == ADMIN_PASSWORD:
+        return "admin"
+    if token == EDITORIAL_PASSWORD:
+        return "editorial"
+    raise HTTPException(status_code=401, detail="Credenciales inválidas")
 
 
 # ============ LINKS ============
 @app.post("/api/links", response_model=LinkResponse)
-async def create_link(link: LinkCreate, request: Request, db: Session = Depends(get_db)):
+async def create_link(
+    link: LinkCreate, 
+    request: Request, 
+    db: Session = Depends(get_db),
+    role: str = Depends(get_current_role)
+):
     # Generate or use custom short code
     if link.custom_code:
         # Check if custom code exists
@@ -148,7 +169,14 @@ async def get_links(request: Request, db: Session = Depends(get_db)):
 
 
 @app.delete("/api/links/{link_id}")
-async def delete_link(link_id: int, db: Session = Depends(get_db)):
+async def delete_link(
+    link_id: int, 
+    db: Session = Depends(get_db),
+    role: str = Depends(get_current_role)
+):
+    if role != "admin":
+        raise HTTPException(status_code=403, detail="No tienes permisos para eliminar links")
+
     link = db.query(Link).filter(Link.id == link_id).first()
     if not link:
         raise HTTPException(status_code=404, detail="Link no encontrado")
