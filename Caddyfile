@@ -2,8 +2,8 @@
     email gabriel.rueda@metrolatam.com
 }
 
-# Configuración para el acortador de URLs - Solo mwn.metrolatam.com
-mwn.metrolatam.com,
+# Configuración para el acortador de URLs - Solo news.metrolatam.com
+news.metrolatam.com,
 16.148.140.43.sslip.io {
     
     # API pasan al backend
