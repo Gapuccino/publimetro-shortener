@@ -6,4 +6,9 @@ export default defineConfig({
   devToolbar: {
     enabled: false,
   },
+  vite: {
+    server: {
+      allowedHosts: ["news.metrolatam.com"],
+    },
+  },
 });
