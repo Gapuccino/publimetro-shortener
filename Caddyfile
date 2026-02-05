@@ -30,6 +30,9 @@ news.metrolatam.com,
     handle /src/* {
         reverse_proxy frontend:4321
     }
+    handle /node_modules/* {
+        reverse_proxy frontend:4321
+    }
     handle / {
         reverse_proxy frontend:4321
     }
@@ -62,6 +65,9 @@ news.metrolatam.com,
         reverse_proxy frontend:4321
     }
     handle /src/* {
+        reverse_proxy frontend:4321
+    }
+    handle /node_modules/* {
         reverse_proxy frontend:4321
     }
     handle / {
