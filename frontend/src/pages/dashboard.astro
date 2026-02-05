@@ -611,7 +611,9 @@ import "../styles/global.css";
     <script>
       const API_URL = "";
 
-      if (sessionStorage.getItem("authenticated") !== "true") {
+      // Validate session completeness
+      if (sessionStorage.getItem("authenticated") !== "true" || !sessionStorage.getItem("token")) {
+        sessionStorage.clear();
         window.location.href = "/";
       }
 
@@ -633,12 +635,23 @@ import "../styles/global.css";
           ...options.headers,
           "Authorization": `Bearer ${authToken}`
         };
-        return fetch(url, { ...options, headers });
+        const response = await fetch(url, { ...options, headers });
+        
+        if (response.status === 401) {
+          // Session expired or invalid credentials
+          sessionStorage.clear();
+          window.location.href = "/";
+          return response;
+        }
+        
+        return response;
       }
 
       async function loadStats() {
         try {
           const response = await fetchWithAuth(`${API_URL}/api/stats`);
+          if (!response.ok) return;
+          
           const stats = await response.json();
           const el = (id: string) => document.getElementById(id);
           if (el("totalLinks"))
@@ -656,9 +669,13 @@ import "../styles/global.css";
 
         try {
           const response = await fetchWithAuth(`${API_URL}/api/links`);
+          if (!response.ok) {
+            throw new Error(`Error ${response.status}`);
+          }
+          
           const data = await response.json();
 
-          if (data.links.length === 0) {
+          if (!data.links || data.links.length === 0) {
             tableBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">No hay links creados</td></tr>`;
             return;
           }
@@ -691,7 +708,8 @@ import "../styles/global.css";
             )
             .join("");
         } catch (error) {
-          tableBody.innerHTML = `<tr><td colspan="5" class="text-center text-error">Error al cargar</td></tr>`;
+          console.error(error);
+          tableBody.innerHTML = `<tr><td colspan="5" class="text-center text-error">Error al cargar (Intenta recargar)</td></tr>`;
         }
       }
 
