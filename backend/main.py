@@ -40,22 +40,22 @@ ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "publimetro2026")
 EDITORIAL_PASSWORD = os.getenv("EDITORIAL_PASSWORD", "publimetro_edit")
 
 DOMAIN_MAPPING = {
-    # Todos los dominios usan s.metrolatam.com
-    "metrolatam.com": "s.metrolatam.com",
-    "readmetro.com": "s.metrolatam.com",
-    "elcalce.com": "s.metrolatam.com",
-    "fayerwayer.com": "s.metrolatam.com",
-    "ferplei.com": "s.metrolatam.com",
-    "metroecuador.com.ec": "s.metrolatam.com",
-    "metro.pr": "s.metrolatam.com",
-    "metroworldnews.com": "s.metrolatam.com",
-    "mwnjornal.com.br": "s.metrolatam.com",
-    "nuevamujer.com": "s.metrolatam.com",
-    "publimetro.cl": "s.metrolatam.com",
-    "publimetro.co": "s.metrolatam.com",
-    "publimetro.com.mx": "s.metrolatam.com",
-    "publinews.gt": "s.metrolatam.com",
-    "sagrosso.com": "s.metrolatam.com"
+    # Todos los dominios usan mwn.metrolatam.com
+    "metrolatam.com": "mwn.metrolatam.com",
+    "readmetro.com": "mwn.metrolatam.com",
+    "elcalce.com": "mwn.metrolatam.com",
+    "fayerwayer.com": "mwn.metrolatam.com",
+    "ferplei.com": "mwn.metrolatam.com",
+    "metroecuador.com.ec": "mwn.metrolatam.com",
+    "metro.pr": "mwn.metrolatam.com",
+    "metroworldnews.com": "mwn.metrolatam.com",
+    "mwnjornal.com.br": "mwn.metrolatam.com",
+    "nuevamujer.com": "mwn.metrolatam.com",
+    "publimetro.cl": "mwn.metrolatam.com",
+    "publimetro.co": "mwn.metrolatam.com",
+    "publimetro.com.mx": "mwn.metrolatam.com",
+    "publinews.gt": "mwn.metrolatam.com",
+    "sagrosso.com": "mwn.metrolatam.com"
 }
 
 def get_base_url(request: Request, original_url: str = None):
