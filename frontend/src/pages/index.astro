@@ -25,7 +25,6 @@ import "../styles/global.css";
             src="/publimetro-logo.png"
             alt="Publimetro Shortener"
             class="logo-img"
-            style="margin: 0 auto 1rem; height: 70px;"
           />
           <p class="text-muted">URL Shortener</p>
         </div>
@@ -77,19 +76,61 @@ import "../styles/global.css";
       .login-card {
         width: 100%;
         max-width: 400px;
+        padding: var(--space-xl);
       }
+      
       .login-header {
         text-align: center;
         margin-bottom: var(--space-xl);
       }
+      
+      .login-header .logo-img {
+        max-width: 100%;
+        width: auto;
+        height: auto;
+        max-height: 80px;
+        margin: 0 auto 1rem;
+        display: block;
+        object-fit: contain;
+      }
+      
       .login-header h1 {
         font-size: 2.5rem;
         margin-bottom: var(--space-xs);
       }
+      
       .login-form {
         display: flex;
         flex-direction: column;
         gap: var(--space-lg);
+      }
+
+      /* Mobile responsive for login */
+      @media (max-width: 480px) {
+        .login-container {
+          padding: var(--space-md);
+        }
+        
+        .login-card {
+          padding: var(--space-lg);
+        }
+        
+        .login-header .logo-img {
+          max-height: 60px;
+        }
+        
+        .login-form {
+          gap: var(--space-md);
+        }
+        
+        .input {
+          padding: 0.75rem;
+          font-size: 0.95rem;
+        }
+        
+        .btn {
+          padding: 0.75rem;
+        }
       }
     </style>
 

@@ -39,6 +39,7 @@ app.add_middleware(
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "publimetro2026")
 
 DOMAIN_MAPPING = {
+    "readmetro.com": "s.readmetro.com",
     "elcalce.com": "s.elcalce.com",
     "fayerwayer.com": "s.fayerwayer.com",
     "ferplei.com": "s.ferplei.com",
@@ -47,9 +48,9 @@ DOMAIN_MAPPING = {
     "metroworldnews.com": "s.metroworldnews.com",
     "mwnjornal.com.br": "s.mwnjornal.com.br",
     "nuevamujer.com": "s.nuevamujer.com",
-    "publimetro.cl": "s.publimetro.cl",
-    "publimetro.co": "s.publimetro.co",
-    "publimetro.com.mx": "s.publimetro.com.mx",
+    "publimetro.cl": "s.readmetro.com",
+    "publimetro.co": "s.readmetro.com",
+    "publimetro.com.mx": "s.readmetro.com",
     "publinews.gt": "s.publinews.gt",
     "sagrosso.com": "s.sagrosso.com"
 }

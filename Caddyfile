@@ -3,6 +3,8 @@
 }
 
 # Configuración para todos los dominios de Publimetro
+s.readmetro.com,
+16.148.140.43.sslip.io,
 s.elcalce.com,
 s.fayerwayer.com,
 s.ferplei.com,
@@ -15,46 +17,70 @@ s.publimetro.cl,
 s.publimetro.co,
 s.publimetro.com.mx,
 s.publinews.gt,
-s.sagrosso.com,
-16-148-140-43.sslip.io {
+s.sagrosso.com {
     
-    # API y Redirecciones pasan al backend
-    handle /api/* {
-        reverse_proxy backend:8000
-    }
-
-    # El acortador (ej: /Abc123) pasa al backend
-    handle_path /* {
-        # Si no es un archivo estático o ruta de dashboard, redirige al backend
-        @not_static {
-            not path /dashboard /_astro/* /favicon.png /publimetro-logo.png /
-        }
-        reverse_proxy @not_static backend:8000
-    }
-
-    # El resto (Dashboard, Assets) pasa al frontend
-    handle {
-        reverse_proxy frontend:4321
-    }
-}
-
-# Acceso por IP (para pruebas temporales y redirecciones)
-:80 {
     # API pasan al backend
     handle /api/* {
         reverse_proxy backend:8000
     }
 
-    # Redirecciones (si no es dashboard o assets)
-    handle {
-        @not_static {
-            not path /dashboard /_astro/* /favicon.png /publimetro-logo.png / /api/*
-        }
-        reverse_proxy @not_static backend:8000
+    # Assets estáticos y Dashboard al frontend
+    handle /_astro/* {
+        reverse_proxy frontend:4321
+    }
+    handle /dashboard* {
+        reverse_proxy frontend:4321
+    }
+    handle /favicon.png {
+        reverse_proxy frontend:4321
+    }
+    handle /publimetro-logo.png {
+        reverse_proxy frontend:4321
+    }
+    handle /@vite/* {
+        reverse_proxy frontend:4321
+    }
+    handle /src/* {
+        reverse_proxy frontend:4321
+    }
+    handle / {
+        reverse_proxy frontend:4321
     }
 
-    # Dashboard y Assets al frontend
-    handle {
+    # Todo lo demás se asume que es un link corto y va al backend
+    handle /* {
+        reverse_proxy backend:8000
+    }
+}
+
+# Acceso por IP (puerto 80)
+:80 {
+    # Mismo esquema que arriba
+    handle /api/* {
+        reverse_proxy backend:8000
+    }
+    handle /_astro/* {
         reverse_proxy frontend:4321
+    }
+    handle /dashboard* {
+        reverse_proxy frontend:4321
+    }
+    handle /favicon.png {
+        reverse_proxy frontend:4321
+    }
+    handle /publimetro-logo.png {
+        reverse_proxy frontend:4321
+    }
+    handle /@vite/* {
+        reverse_proxy frontend:4321
+    }
+    handle /src/* {
+        reverse_proxy frontend:4321
+    }
+    handle / {
+        reverse_proxy frontend:4321
+    }
+    handle /* {
+        reverse_proxy backend:8000
     }
 }
