@@ -611,6 +611,13 @@ import "../styles/global.css";
     <script>
       const API_URL = "";
 
+
+
+      try {
+        const tableBody = document.getElementById("linksTable");
+        if (tableBody) tableBody.innerHTML = '<tr><td colspan="5" class="text-center">Iniciando...</td></tr>';
+      } catch (e) {}
+
       // Validate session completeness
       if (sessionStorage.getItem("authenticated") !== "true" || !sessionStorage.getItem("token")) {
         sessionStorage.clear();
@@ -629,6 +636,31 @@ import "../styles/global.css";
       });
 
       // ... existing toast and copy functions ...
+
+      function formatDate(dateString: string) {
+        if (!dateString) return '-';
+        // Force UTC interpretation if no timezone info present
+        if (!dateString.endsWith("Z") && !dateString.includes("+")) {
+            dateString += "Z";
+        }
+        return new Date(dateString).toLocaleDateString('es-ES', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      }
+
+      async function copyToClipboard(text: string) {
+        try {
+          await navigator.clipboard.writeText(text);
+          showToast("Link copiado al portapapeles");
+        } catch (err) {
+          console.error("Error al copiar:", err);
+          showToast("Error al copiar link", "error");
+        }
+      }
 
       async function fetchWithAuth(url: string, options: RequestInit = {}) {
         const headers = {
@@ -709,7 +741,7 @@ import "../styles/global.css";
             .join("");
         } catch (error) {
           console.error(error);
-          tableBody.innerHTML = `<tr><td colspan="5" class="text-center text-error">Error al cargar (Intenta recargar)</td></tr>`;
+          tableBody.innerHTML = `<tr><td colspan="5" class="text-center text-error">Error: ${(error as Error).message}</td></tr>`;
         }
       }
 
