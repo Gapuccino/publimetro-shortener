@@ -665,12 +665,15 @@ import "../styles/global.css";
       }
 
       function formatDate(dateString: string): string {
-        const date = new Date(dateString);
+        // Backend returns UTC but without 'Z', so we add it
+        const utcDateString = dateString.endsWith('Z') ? dateString : dateString + 'Z';
+        const date = new Date(utcDateString);
         return date.toLocaleDateString("es-MX", {
           day: "2-digit",
           month: "short",
           hour: "2-digit",
           minute: "2-digit",
+          timeZone: "America/Mexico_City",
         });
       }
 
