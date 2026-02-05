@@ -635,7 +635,25 @@ import "../styles/global.css";
         window.location.href = "/";
       });
 
-      // ... existing toast and copy functions ...
+      function showToast(message: string, type: string = "success") {
+        const toast = document.getElementById("toast");
+        if (!toast) return;
+        
+        toast.textContent = message;
+        toast.className = `toast toast-${type}`;
+        toast.style.display = "block";
+        
+        // Trigger animation
+        toast.offsetHeight; // Force reflow
+        toast.classList.add("show");
+        
+        setTimeout(() => {
+          toast.classList.remove("show");
+          setTimeout(() => {
+            toast.style.display = "none";
+          }, 300);
+        }, 3000);
+      }
 
       function formatDate(dateString: string) {
         if (!dateString) return '-';
@@ -665,13 +683,18 @@ import "../styles/global.css";
       async function fetchWithAuth(url: string, options: RequestInit = {}) {
         const headers = {
           ...options.headers,
-          "Authorization": `Bearer ${authToken}`,
-          "Cache-Control": "no-cache"
+          "Authorization": `Bearer ${authToken}`
         };
+        
+        // Aggressive cache busting
+        if (options.method === 'GET' || !options.method) {
+            const separator = url.includes('?') ? '&' : '?';
+            url = `${url}${separator}_t=${Date.now()}`;
+        }
+        
         const response = await fetch(url, { ...options, headers, cache: "no-store" });
         
         if (response.status === 401) {
-          // Session expired or invalid credentials
           sessionStorage.clear();
           window.location.href = "/";
           return response;
@@ -679,6 +702,107 @@ import "../styles/global.css";
         
         return response;
       }
+
+      function formatDate(dateString: string) {
+        if (!dateString) return '-';
+        // Force UTC interpretation if no timezone info present
+        let parsedString = dateString;
+        if (!dateString.endsWith("Z") && !dateString.includes("+")) {
+            parsedString += "Z";
+        }
+        const date = new Date(parsedString);
+        console.log(`Formatting: ${dateString} -> ${parsedString} -> ${date.toString()}`);
+        
+        return date.toLocaleDateString('es-ES', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      }
+
+      // ... existing functions ...
+
+      document
+        .getElementById("createForm")
+        ?.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const btn = (e.target as HTMLFormElement).querySelector('button[type="submit"]') as HTMLButtonElement;
+          const originalText = btn.innerHTML;
+          btn.disabled = true;
+          btn.innerHTML = `<span class="spinner"></span> Acortando...`;
+
+          const urlInput = document.getElementById("url") as HTMLInputElement;
+          const titleInput = document.getElementById("title") as HTMLInputElement;
+          const customCodeInput = document.getElementById("customCode") as HTMLInputElement;
+
+          const body: any = { url: urlInput.value };
+          if (titleInput.value) body.title = titleInput.value;
+          if (customCodeInput.value) body.custom_code = customCodeInput.value;
+
+          try {
+            const response = await fetchWithAuth(`${API_URL}/api/links`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(body),
+            });
+
+            if (response.ok) {
+              const link = await response.json();
+              showToast("¡Link creado y copiado!");
+              await copyToClipboard(link.short_url);
+              urlInput.value = "";
+              titleInput.value = "";
+              customCodeInput.value = "";
+              await loadLinks();
+              await loadStats();
+            } else {
+              const error = await response.json();
+              showToast(error.detail || "Error al crear", "error");
+            }
+          } catch {
+            showToast("Error de conexión", "error");
+          } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+          }
+        });
+
+        // ... delete logic ...
+        
+        document.getElementById("confirmDelete")?.addEventListener("click", async () => {
+          if (pendingDeleteId === null) return;
+          const idToDelete = pendingDeleteId;
+          const confirmBtn = document.getElementById("confirmDelete") as HTMLButtonElement;
+          const originalText = confirmBtn.innerText;
+          
+          confirmBtn.disabled = true;
+          confirmBtn.innerText = "Eliminando...";
+
+          try {
+            const response = await fetchWithAuth(`${API_URL}/api/links/${idToDelete}`, {
+              method: "DELETE",
+            });
+
+            if (response.ok) {
+              showToast("Link eliminado");
+              hideDeleteModal(); // Hide first
+              await loadLinks();
+              await loadStats();
+            } else {
+              hideDeleteModal();
+              // ... error handling ...
+              showToast("Error al eliminar", "error");
+            }
+          } catch (error) {
+            hideDeleteModal();
+            showToast("Error de conexión", "error");
+          } finally {
+             confirmBtn.disabled = false;
+             confirmBtn.innerText = originalText;
+          }
+        });
 
       async function loadStats() {
         try {
